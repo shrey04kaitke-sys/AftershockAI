@@ -1,0 +1,6 @@
+Our e-commerce platform has an API Gateway that routes every request to the Authentication Service and the Order Service. The API Gateway cannot serve requests without both of them.
+The Authentication Service stores users in PostgreSQL and caches sessions in Redis Cache; it still works without Redis, just slower.
+The Order Service stores orders in PostgreSQL, calls the Payment Service to charge cards, calls the Inventory Service to reserve stock, and publishes order events to the Message Queue asynchronously, so it keeps accepting orders if the queue is down. The Order Service can still accept orders and defer payment capture if the Payment Service is unavailable.
+The Payment Service stores transactions in PostgreSQL.
+The Inventory Service reads stock levels from PostgreSQL and uses Redis Cache as an optional cache.
+The Notification Worker consumes order events from the Message Queue and loads order details from PostgreSQL before sending emails.

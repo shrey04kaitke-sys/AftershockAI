@@ -1,0 +1,30 @@
+{
+  "name": "E-commerce platform (sample data)",
+  "components": [
+    {"id": "api_gateway", "name": "API Gateway", "type": "gateway", "provenance": "sample_data"},
+    {"id": "auth_service", "name": "Authentication Service", "type": "service", "provenance": "sample_data"},
+    {"id": "order_service", "name": "Order Service", "type": "service", "supports_degraded_mode": true,
+     "degraded_behavior": "Accepts orders and defers payment capture until the Payment Service recovers", "provenance": "sample_data"},
+    {"id": "payment_service", "name": "Payment Service", "type": "service", "provenance": "sample_data"},
+    {"id": "inventory_service", "name": "Inventory Service", "type": "service", "provenance": "sample_data"},
+    {"id": "postgres", "name": "PostgreSQL", "type": "database", "provenance": "sample_data"},
+    {"id": "redis", "name": "Redis Cache", "type": "cache", "provenance": "sample_data"},
+    {"id": "message_queue", "name": "Message Queue", "type": "queue", "provenance": "sample_data"},
+    {"id": "notification_worker", "name": "Notification Worker", "type": "worker", "provenance": "sample_data"}
+  ],
+  "dependencies": [
+    {"source": "api_gateway", "target": "auth_service", "criticality": "required", "provenance": "sample_data", "evidence": "The API Gateway cannot serve requests without both of them."},
+    {"source": "api_gateway", "target": "order_service", "criticality": "required", "provenance": "sample_data", "evidence": "The API Gateway cannot serve requests without both of them."},
+    {"source": "auth_service", "target": "postgres", "criticality": "required", "provenance": "sample_data", "evidence": "stores users in PostgreSQL"},
+    {"source": "auth_service", "target": "redis", "criticality": "optional", "provenance": "sample_data", "evidence": "still works without Redis, just slower"},
+    {"source": "order_service", "target": "postgres", "criticality": "required", "provenance": "sample_data", "evidence": "stores orders in PostgreSQL"},
+    {"source": "order_service", "target": "payment_service", "criticality": "required", "provenance": "sample_data", "evidence": "calls the Payment Service to charge cards"},
+    {"source": "order_service", "target": "inventory_service", "criticality": "required", "provenance": "sample_data", "evidence": "calls the Inventory Service to reserve stock"},
+    {"source": "order_service", "target": "message_queue", "criticality": "optional", "provenance": "sample_data", "evidence": "keeps accepting orders if the queue is down"},
+    {"source": "payment_service", "target": "postgres", "criticality": "required", "provenance": "sample_data", "evidence": "stores transactions in PostgreSQL"},
+    {"source": "inventory_service", "target": "postgres", "criticality": "required", "provenance": "sample_data", "evidence": "reads stock levels from PostgreSQL"},
+    {"source": "inventory_service", "target": "redis", "criticality": "optional", "provenance": "sample_data", "evidence": "uses Redis Cache as an optional cache"},
+    {"source": "notification_worker", "target": "message_queue", "criticality": "required", "provenance": "sample_data", "evidence": "consumes order events from the Message Queue"},
+    {"source": "notification_worker", "target": "postgres", "criticality": "required", "provenance": "sample_data", "evidence": "loads order details from PostgreSQL"}
+  ]
+}
